@@ -1,12 +1,9 @@
-type ResponseError = {
-  errorName: 'unknown' | 'no_method';
-  message?: string;
-};
+import type { ResponseError } from '../responseError';
 
 export type Room = {
   _id: string;
   status: 'waiting' | 'chatting';
-  rtmToken: string;
+  rtmToken?: string;
 };
 
 export type ResponseData = Room | ResponseError | string;

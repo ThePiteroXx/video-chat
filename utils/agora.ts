@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { RtmTokenBuilder, RtmRole } from 'agora-access-token';
 
-import type { Message } from '@/types/roomApi';
-
 const getRtmToken = (userId: string) => {
   const appID = process.env.NEXT_PUBLIC_AGORA_APP_ID!;
   const appCertificate = process.env.AGORA_APP_CERT!;
@@ -20,12 +18,7 @@ const getRtmToken = (userId: string) => {
   return token;
 };
 
-const connectToAgoraRtm = async (
-  roomId: string,
-  userId: string,
-  onMessage: (message: Message) => void,
-  token: string
-) => {
+const connectToAgoraRtm = async (roomId: string, userId: string, token: string) => {
   const AgoraRTM = (await import('agora-rtm-sdk')).default;
   const client = AgoraRTM.createInstance(process.env.NEXT_PUBLIC_AGORA_APP_ID!);
   await client.login({
@@ -34,11 +27,6 @@ const connectToAgoraRtm = async (
   });
   const channel = client.createChannel(roomId);
   await channel.join();
-
-  channel.on('ChannelMessage', (message, userId) => {
-    if (!message.text) return;
-    onMessage({ userId, message: message.text });
-  });
 
   return {
     channel,
