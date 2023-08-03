@@ -40,7 +40,6 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
       return mongoose;
     });

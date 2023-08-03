@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Room from '@/models/Room';
 import dbConnect from '@/libs/dbConnect';
 
-import { getRtmToken } from '@/utils/agora';
+import { getRtmToken, getRtcToken } from '@/utils/agora';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 import type { ResponseData, Room as RoomType } from '@/types/roomApi';
@@ -23,9 +23,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       // create room if not exists
       if (!room) {
         const newRoom = (await Room.create<RoomType>({ status: 'waiting' })) as RoomType;
-        return res
-          .status(200)
-          .json({ _id: newRoom._id, status: newRoom.status, rtmToken: getRtmToken(userId) });
+        return res.status(200).json({
+          _id: newRoom._id,
+          status: newRoom.status,
+          rtmToken: getRtmToken(userId),
+          rtcToken: getRtcToken(newRoom._id.toString(), userId),
+        });
       }
 
       // update status if room exists
@@ -37,9 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         { returnOriginal: false }
       )) as RoomType;
 
-      return res
-        .status(200)
-        .json({ _id: room._id, status: room.status, rtmToken: getRtmToken(userId) });
+      return res.status(200).json({
+        _id: room._id,
+        status: room.status,
+        rtmToken: getRtmToken(userId),
+        rtcToken: getRtcToken(room._id.toString(), userId),
+      });
     } catch (err) {
       const message = getErrorMessage(err);
       return res.status(400).json({ errorName: 'unknown', message });

@@ -1,33 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useExitIntent } from 'use-exit-intent';
 import { v4 as uuidv4 } from 'uuid';
 import { RtmChannel } from 'agora-rtm-sdk';
+import { IMicrophoneAudioTrack, ICameraVideoTrack, IAgoraRTCClient } from 'agora-rtc-sdk-ng';
 
 import { Room } from '@/types/roomApi';
-import { connectToAgoraRtm } from '@/utils/agora';
+import { connectToAgoraRtm, connectToAgoraRtc } from '@/utils/agora';
 
 import PannelChat from './PannelChat/PannelChat';
+import PannelVideo from './PannelVideo/PannelVideo';
 import { leaveRoom } from './helpers';
 // import styles from '../styles/Home.module.css';
 
 const userId = uuidv4();
 let clientChannel: RtmChannel | undefined;
+let rtcClient: IAgoraRTCClient | undefined;
+let rtcTracks: [IMicrophoneAudioTrack, ICameraVideoTrack] | undefined;
 
 const Home = () => {
   const [room, setRoom] = useState<Room | null>(null);
-  const { registerHandler } = useExitIntent({
-    desktop: {
-      triggerOnMouseLeave: false,
-      useBeforeUnload: true,
-    },
-  });
-  registerHandler({
-    id: 'leaveRoom',
-    handler: () => {
-      if (!room) return;
-      leaveRoom(room);
-    },
-  });
+  const isChatting = !!room && !!clientChannel && !!rtcClient && !!rtcTracks;
 
   const connectToRoom = async () => {
     const room: Room = await fetch(`/api/room/connect`, {
@@ -35,9 +26,12 @@ const Home = () => {
       body: JSON.stringify({ userId }),
     }).then((res) => res.json());
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { channel } = await connectToAgoraRtm(room._id, userId, room.rtmToken!);
+    const { tracks, client } = await connectToAgoraRtc(room._id, userId, room.rtcToken!);
+
     clientChannel = channel;
+    rtcTracks = tracks;
+    rtcClient = client;
 
     setRoom(room);
   };
@@ -53,10 +47,20 @@ const Home = () => {
       setRoom((prev) => ({ ...prev, status: 'waiting' } as Room));
     };
 
+    const handleExitIntent = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+
+      leaveRoom(room);
+      setRoom(null);
+    };
+
+    window.addEventListener('beforeunload', handleExitIntent);
     clientChannel.on('MemberJoined', onMemberJoin);
     clientChannel.on('MemberLeft', onMemberLeft);
 
     return () => {
+      window.removeEventListener('beforeunload', handleExitIntent);
       clientChannel?.off('MemberJoined', onMemberJoin);
       clientChannel?.off('MemberLeft', onMemberLeft);
     };
@@ -65,13 +69,16 @@ const Home = () => {
   return (
     <div>
       {!room && <button onClick={connectToRoom}>Start chatting</button>}
-      {room && clientChannel && (
-        <PannelChat
-          userId={userId}
-          room={room}
-          clientChannel={clientChannel}
-          connectToRoom={connectToRoom}
-        />
+      {isChatting && (
+        <>
+          <PannelVideo rtcClient={rtcClient!} myVideoTrack={rtcTracks!} />
+          <PannelChat
+            userId={userId}
+            room={room}
+            clientChannel={clientChannel!}
+            connectToRoom={connectToRoom}
+          />
+        </>
       )}
       <p>{room?._id}</p>
     </div>
