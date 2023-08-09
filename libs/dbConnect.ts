@@ -25,7 +25,7 @@ if (!MONGODB_URI) {
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null };
 }
 
 async function dbConnect() {
@@ -33,18 +33,14 @@ async function dbConnect() {
     return cached.conn;
   }
 
-  if (!cached.promise) {
-    const opts = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      bufferCommands: false,
-    };
+  const opts = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    bufferCommands: false,
+  };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
-    });
-  }
-  cached.conn = await cached.promise;
+  cached.conn = await mongoose.connect(MONGODB_URI!, opts);
+
   return cached.conn;
 }
 

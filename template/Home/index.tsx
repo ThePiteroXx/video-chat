@@ -1,41 +1,75 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { RtmChannel } from 'agora-rtm-sdk';
-import { IMicrophoneAudioTrack, ICameraVideoTrack, IAgoraRTCClient } from 'agora-rtc-sdk-ng';
+import AgoraRTC, {
+  ICameraVideoTrack,
+  IRemoteVideoTrack,
+  IMicrophoneAudioTrack,
+} from 'agora-rtc-sdk-ng';
 
 import { Room } from '@/types/roomApi';
-import { connectToAgoraRtm, connectToAgoraRtc } from '@/utils/agora';
+import { connectToAgoraRtm } from '@/utils/agora';
 
 import PannelChat from './PannelChat/PannelChat';
 import PannelVideo from './PannelVideo/PannelVideo';
 import { leaveRoom } from './helpers';
+import { RtmChannel } from 'agora-rtm-sdk';
 // import styles from '../styles/Home.module.css';
+
+const rtcClient = AgoraRTC.createClient({
+  mode: 'rtc',
+  codec: 'vp8',
+});
 
 const userId = uuidv4();
 let clientChannel: RtmChannel | undefined;
-let rtcClient: IAgoraRTCClient | undefined;
-let rtcTracks: [IMicrophoneAudioTrack, ICameraVideoTrack] | undefined;
+let myVideoTrack: [IMicrophoneAudioTrack, ICameraVideoTrack] | undefined;
 
 const Home = () => {
   const [room, setRoom] = useState<Room | null>(null);
-  const isChatting = !!room && !!clientChannel && !!rtcClient && !!rtcTracks;
+  const [memberVideo, setMemberVideo] = useState<IRemoteVideoTrack>();
+  const [myVideo, setMyVideo] = useState<ICameraVideoTrack>();
 
   const connectToRoom = async () => {
-    const room: Room = await fetch(`/api/room/connect`, {
+    room && rtcClient.leave();
+
+    if (!myVideoTrack) {
+      myVideoTrack = await AgoraRTC.createMicrophoneAndCameraTracks();
+      setMyVideo(myVideoTrack[1]);
+    }
+
+    const newRoom: Room = await fetch(`/api/room/connect`, {
       method: 'POST',
       body: JSON.stringify({ userId }),
     }).then((res) => res.json());
 
-    const { channel } = await connectToAgoraRtm(room._id, userId, room.rtmToken!);
-    const { tracks, client } = await connectToAgoraRtc(room._id, userId, room.rtcToken!);
+    const [{ channel }] = await Promise.all([
+      connectToAgoraRtm(newRoom._id, userId, newRoom.rtmToken!),
+      rtcClient.join(process.env.NEXT_PUBLIC_AGORA_APP_ID!, newRoom._id, newRoom.rtcToken!, userId),
+    ]);
+
+    await rtcClient.publish(myVideoTrack);
 
     clientChannel = channel;
-    rtcTracks = tracks;
-    rtcClient = client;
 
-    setRoom(room);
+    setRoom(newRoom);
   };
 
+  // listen when user join to room with video
+  useEffect(() => {
+    rtcClient.on('user-published', async (member, mediaType) => {
+      await rtcClient.subscribe(member, mediaType);
+
+      if (mediaType === 'video') {
+        setMemberVideo(member.videoTrack);
+      }
+
+      if (mediaType === 'audio') {
+        member.audioTrack?.play();
+      }
+    });
+  }, []);
+
+  // listen when user join to the chat
   useEffect(() => {
     if (!clientChannel || !room) return;
 
@@ -69,9 +103,9 @@ const Home = () => {
   return (
     <div>
       {!room && <button onClick={connectToRoom}>Start chatting</button>}
-      {isChatting && (
+      {room && myVideo && (
         <>
-          <PannelVideo rtcClient={rtcClient!} myVideoTrack={rtcTracks!} />
+          <PannelVideo memberTrack={memberVideo} myVideoTrack={myVideo} />
           <PannelChat
             userId={userId}
             room={room}

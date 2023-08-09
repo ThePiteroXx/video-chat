@@ -47,27 +47,11 @@ const connectToAgoraRtm = async (roomId: string, userId: string, token: string) 
     token,
   });
   const channel = client.createChannel(roomId);
-  await channel.join();
+  channel.join();
 
   return {
     channel,
   };
 };
 
-const connectToAgoraRtc = async (roomId: string, userId: string, token: string) => {
-  const { default: AgoraRTC } = await import('agora-rtc-sdk-ng');
-
-  const client = AgoraRTC.createClient({
-    mode: 'rtc',
-    codec: 'vp8',
-  });
-
-  await client.join(process.env.NEXT_PUBLIC_AGORA_APP_ID!, roomId, token, userId);
-
-  const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
-  await client.publish(tracks);
-
-  return { tracks, client };
-};
-
-export { getRtmToken, getRtcToken, connectToAgoraRtm, connectToAgoraRtc };
+export { getRtmToken, getRtcToken, connectToAgoraRtm };

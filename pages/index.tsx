@@ -1,4 +1,6 @@
-import Home from '@/template/Home';
+import dynamic from 'next/dynamic';
+
+const Home = dynamic(() => import('@/template/Home'), { ssr: false });
 
 const HomePage = () => {
   return <Home />;

@@ -17,6 +17,7 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
   const inputRef = useRef<HTMLInputElement>(null);
 
   const nextRoom = async () => {
+    setMessages([]);
     switch (room?.status) {
       case 'chatting':
         const prevRoom = room;
@@ -28,7 +29,6 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
         connectToRoom();
         break;
     }
-    setMessages([]);
   };
 
   const onSubmit = async (e: React.SyntheticEvent) => {
