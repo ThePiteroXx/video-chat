@@ -67,6 +67,10 @@ const Home = () => {
         member.audioTrack?.play();
       }
     });
+
+    rtcClient.on('user-unpublished', () => {
+      setMemberVideo(undefined);
+    });
   }, []);
 
   // listen when user join to the chat
@@ -86,6 +90,9 @@ const Home = () => {
       event.returnValue = '';
 
       leaveRoom(room);
+      rtcClient.leave();
+      clientChannel?.leave();
+      setMemberVideo(undefined);
       setRoom(null);
     };
 
@@ -99,21 +106,20 @@ const Home = () => {
       clientChannel?.off('MemberLeft', onMemberLeft);
     };
   }, [room]);
+  console.log(room, myVideo);
+  if (!myVideo) return <button onClick={connectToRoom}>Start chatting</button>;
 
   return (
     <div>
-      {!room && <button onClick={connectToRoom}>Start chatting</button>}
-      {room && myVideo && (
-        <>
-          <PannelVideo memberTrack={memberVideo} myVideoTrack={myVideo} />
-          <PannelChat
-            userId={userId}
-            room={room}
-            clientChannel={clientChannel!}
-            connectToRoom={connectToRoom}
-          />
-        </>
-      )}
+      <>
+        <PannelVideo memberTrack={memberVideo} myVideoTrack={myVideo} />
+        <PannelChat
+          userId={userId}
+          room={room}
+          clientChannel={clientChannel}
+          connectToRoom={connectToRoom}
+        />
+      </>
       <p>{room?._id}</p>
     </div>
   );

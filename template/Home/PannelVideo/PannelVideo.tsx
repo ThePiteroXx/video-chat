@@ -4,17 +4,21 @@ import VideoPlayer from './VideoPlayer/VideoPlayer';
 
 interface VideoPannelProps {
   memberTrack?: IRemoteVideoTrack;
-  myVideoTrack: ICameraVideoTrack;
+  myVideoTrack?: ICameraVideoTrack;
 }
 
 const PannelVideo = ({ memberTrack, myVideoTrack }: VideoPannelProps) => {
   return (
     <div>
-      {memberTrack && (
+      {memberTrack ? (
         <VideoPlayer videoTrack={memberTrack} style={{ width: '300px', height: '300px' }} />
+      ) : (
+        <div style={{ width: '300px', height: '300px', backgroundColor: 'black' }} />
       )}
-      {myVideoTrack && (
+      {myVideoTrack ? (
         <VideoPlayer videoTrack={myVideoTrack} style={{ width: '300px', height: '300px' }} />
+      ) : (
+        <div style={{ width: '300px', height: '300px', backgroundColor: 'black' }} />
       )}
     </div>
   );

@@ -7,8 +7,8 @@ import { RtmChannel, RtmMessage } from 'agora-rtm-sdk';
 
 interface PannelChatProps {
   userId: string;
-  room: Room;
-  clientChannel: RtmChannel;
+  room: Room | null;
+  clientChannel?: RtmChannel;
   connectToRoom: () => Promise<void>;
 }
 
@@ -31,10 +31,15 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
     }
   };
 
+  const reconnect = () => {
+    setMessages([]);
+    connectToRoom();
+  };
+
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    if (!inputRef.current?.value) return;
+    if (!inputRef.current?.value || !clientChannel) return;
     const value = inputRef.current.value;
 
     await clientChannel.sendMessage({ text: value });
@@ -43,6 +48,8 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
   };
 
   useEffect(() => {
+    if (!clientChannel) return;
+
     const onMessage = (message: RtmMessage, userId: string) => {
       if (!message.text) return;
       setMessages((prev) => [...prev, { userId, message: message.text }]);
@@ -56,7 +63,11 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
 
   return (
     <>
-      <button onClick={nextRoom}>next</button>
+      {room ? (
+        <button onClick={nextRoom}>next</button>
+      ) : (
+        <button onClick={reconnect}>reconnect</button>
+      )}
       <ul>
         {messages.map(({ message, userId: id }, index) => (
           <li key={index}>
@@ -67,7 +78,7 @@ const PannelChat = ({ userId, room, clientChannel, connectToRoom }: PannelChatPr
       </ul>
       <form onSubmit={onSubmit}>
         <input ref={inputRef} />
-        <button>submit</button>
+        <button disabled={!!!room}>submit</button>
       </form>
     </>
   );
