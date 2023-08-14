@@ -14,6 +14,13 @@ type PannelChatProps = {
   clientChannel?: RtmChannel;
 };
 
+const indentifyUser = (myId: string, messageId: string) => {
+  if (messageId === myId) return 'You';
+  if (messageId === 'info') return 'Info';
+
+  return 'Stranger';
+};
+
 const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
   ({ userId, room, clientChannel }, ref) => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -49,10 +56,18 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
         if (!message.text) return;
         setMessages((prev) => [...prev, { userId, message: message.text }]);
       };
+      const onMemberLeft = () => {
+        setMessages((prev) => [
+          ...prev,
+          { userId: 'info', message: 'Member has been disconnected from chat.' },
+        ]);
+      };
       clientChannel.on('ChannelMessage', onMessage);
+      clientChannel.on('MemberLeft', onMemberLeft);
 
       return () => {
         clientChannel.off('ChannelMessage', onMessage);
+        clientChannel.off('MemberLeft', onMemberLeft);
       };
     }, [clientChannel]);
 
@@ -61,8 +76,7 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
         <ul>
           {messages.map(({ message, userId: id }, index) => (
             <li key={index}>
-              {id === userId ? 'You: ' : 'Stranger: '}
-              {message}
+              {indentifyUser(userId, id)}: {message}
             </li>
           ))}
         </ul>
