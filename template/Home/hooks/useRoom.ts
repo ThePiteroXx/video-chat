@@ -14,6 +14,7 @@ import { leaveRoom } from '../helpers';
 
 export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
   const [room, setRoom] = useState<Room | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [memberVideo, setMemberVideo] = useState<IRemoteVideoTrack>();
   const [myVideo, setMyVideo] = useState<ICameraVideoTrack>();
 
@@ -22,6 +23,7 @@ export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
 
   const connectToRoom = async () => {
     room && rtcClient.leave();
+    setIsConnecting(true);
 
     if (!myVideoTrack.current) {
       myVideoTrack.current = await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -43,6 +45,7 @@ export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
     chatChannel.current = channel;
 
     setRoom(newRoom);
+    setIsConnecting(false);
   };
 
   // listen when user join to room with video
@@ -98,5 +101,12 @@ export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
     };
   }, [room, rtcClient]);
 
-  return { room, myVideo, memberVideo, connectToRoom, chatChannel: chatChannel.current };
+  return {
+    room,
+    isConnecting,
+    myVideo,
+    memberVideo,
+    connectToRoom,
+    chatChannel: chatChannel.current,
+  };
 };

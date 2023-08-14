@@ -1,9 +1,12 @@
+import { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
 import PannelChat from './PannelChat/PannelChat';
 import PannelVideo from './PannelVideo/PannelVideo';
 import { useRoom } from './hooks/useRoom';
+import { ChatHandle } from './PannelChat/PannelChat';
+import { leaveRoom } from './helpers';
 // import styles from '../styles/Home.module.css';
 
 const rtcClient = AgoraRTC.createClient({
@@ -13,7 +16,33 @@ const rtcClient = AgoraRTC.createClient({
 const userId = uuidv4();
 
 const Home = () => {
-  const { room, myVideo, memberVideo, chatChannel, connectToRoom } = useRoom(userId, rtcClient);
+  const { room, myVideo, isConnecting, memberVideo, chatChannel, connectToRoom } = useRoom(
+    userId,
+    rtcClient
+  );
+  const chatRef = useRef<ChatHandle>(null);
+
+  const nextRoom = async () => {
+    chatRef.current?.resetMessages();
+
+    switch (room?.status) {
+      case 'chatting':
+        const prevRoom = room;
+        await connectToRoom();
+        leaveRoom(prevRoom);
+        break;
+      case 'waiting':
+        await leaveRoom(room);
+        connectToRoom();
+        break;
+    }
+  };
+
+  const reconnect = () => {
+    if (isConnecting) return;
+    chatRef.current?.resetMessages();
+    connectToRoom();
+  };
 
   if (!myVideo) return <button onClick={connectToRoom}>Start chatting</button>;
 
@@ -21,12 +50,12 @@ const Home = () => {
     <div>
       <>
         <PannelVideo memberTrack={memberVideo} myVideoTrack={myVideo} />
-        <PannelChat
-          userId={userId}
-          room={room}
-          clientChannel={chatChannel}
-          connectToRoom={connectToRoom}
-        />
+        {room ? (
+          <button onClick={nextRoom}>next</button>
+        ) : (
+          <button onClick={reconnect}>{isConnecting ? 'connecting...' : 'reconnect'}</button>
+        )}
+        <PannelChat userId={userId} room={room} clientChannel={chatChannel} ref={chatRef} />
       </>
       <p>{room?._id}</p>
     </div>
