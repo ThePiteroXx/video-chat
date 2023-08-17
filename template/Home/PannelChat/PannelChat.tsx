@@ -64,12 +64,22 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
           { userId: 'info', message: 'Member has been disconnected from chat.' },
         ]);
       };
+
+      const onMemberJoined = () => {
+        setMessages((prev) => [
+          ...prev,
+          { userId: 'info', message: 'Member has joined your room' },
+        ]);
+      };
+
       clientChannel.on('ChannelMessage', onMessage);
       clientChannel.on('MemberLeft', onMemberLeft);
+      clientChannel.on('MemberJoined', onMemberJoined);
 
       return () => {
         clientChannel.off('ChannelMessage', onMessage);
         clientChannel.off('MemberLeft', onMemberLeft);
+        clientChannel.off('MemberJoined', onMemberJoined);
       };
     }, [clientChannel]);
 
@@ -84,7 +94,7 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
         </ul>
         <form onSubmit={onSubmit} className={styles.form}>
           <input ref={inputRef} className={styles.input} />
-          <button disabled={!!!room} className={styles.submitButton}>
+          <button disabled={!room} className={styles.submitButton}>
             submit
           </button>
         </form>

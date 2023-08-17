@@ -23,6 +23,8 @@ export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
 
   const connectToRoom = async () => {
     room && rtcClient.leave();
+    memberVideo && setMemberVideo(undefined);
+
     setIsConnecting(true);
 
     if (!myVideoTrack.current) {
