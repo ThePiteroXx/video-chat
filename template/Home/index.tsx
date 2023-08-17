@@ -45,7 +45,14 @@ const Home = () => {
     connectToRoom();
   };
 
-  if (!myVideo) return <button onClick={connectToRoom}>Start chatting</button>;
+  if (!myVideo)
+    return (
+      <div className={styles['initial-screen']}>
+        <button onClick={connectToRoom} className={styles.btn}>
+          Start chatting
+        </button>
+      </div>
+    );
 
   return (
     <div className={styles.main}>

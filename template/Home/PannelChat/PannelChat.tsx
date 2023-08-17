@@ -94,7 +94,7 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
         </ul>
         <form onSubmit={onSubmit} className={styles.form}>
           <input ref={inputRef} className={styles.input} />
-          <button disabled={!room} className={styles.submitButton}>
+          <button disabled={!room} className={styles['submit-button']}>
             submit
           </button>
         </form>
