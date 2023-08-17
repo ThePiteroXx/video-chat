@@ -22,32 +22,42 @@ export const useRoom = (userId: string, rtcClient: IAgoraRTCClient) => {
   const myVideoTrack = useRef<[IMicrophoneAudioTrack, ICameraVideoTrack]>();
 
   const connectToRoom = async () => {
-    room && rtcClient.leave();
-    memberVideo && setMemberVideo(undefined);
+    try {
+      room && rtcClient.leave();
+      memberVideo && setMemberVideo(undefined);
 
-    setIsConnecting(true);
+      setIsConnecting(true);
 
-    if (!myVideoTrack.current) {
-      myVideoTrack.current = await AgoraRTC.createMicrophoneAndCameraTracks();
-      setMyVideo(myVideoTrack.current[1]);
+      if (!myVideoTrack.current) {
+        myVideoTrack.current = await AgoraRTC.createMicrophoneAndCameraTracks();
+        setMyVideo(myVideoTrack.current[1]);
+      }
+
+      const newRoom: Room = await fetch(`/api/room/connect`, {
+        method: 'POST',
+        body: JSON.stringify({ userId }),
+      }).then((res) => res.json());
+
+      const [{ channel }] = await Promise.all([
+        connectToAgoraRtm(newRoom._id, userId, newRoom.rtmToken!),
+        rtcClient.join(
+          process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+          newRoom._id,
+          newRoom.rtcToken!,
+          userId
+        ),
+      ]);
+
+      await rtcClient.publish(myVideoTrack.current);
+
+      chatChannel.current = channel;
+
+      setRoom(newRoom);
+      setIsConnecting(false);
+    } catch (error) {
+      // TODO  handle errors
+      console.log(error);
     }
-
-    const newRoom: Room = await fetch(`/api/room/connect`, {
-      method: 'POST',
-      body: JSON.stringify({ userId }),
-    }).then((res) => res.json());
-
-    const [{ channel }] = await Promise.all([
-      connectToAgoraRtm(newRoom._id, userId, newRoom.rtmToken!),
-      rtcClient.join(process.env.NEXT_PUBLIC_AGORA_APP_ID!, newRoom._id, newRoom.rtcToken!, userId),
-    ]);
-
-    await rtcClient.publish(myVideoTrack.current);
-
-    chatChannel.current = channel;
-
-    setRoom(newRoom);
-    setIsConnecting(false);
   };
 
   // listen when user join to room with video

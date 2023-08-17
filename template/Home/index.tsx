@@ -24,19 +24,12 @@ const Home = () => {
   const chatRef = useRef<ChatHandle>(null);
 
   const nextRoom = async () => {
+    if (!room || room.status === 'waiting') return;
     chatRef.current?.resetMessages();
 
-    switch (room?.status) {
-      case 'chatting':
-        const prevRoom = room;
-        await connectToRoom();
-        leaveRoom(prevRoom);
-        break;
-      case 'waiting':
-        await leaveRoom(room);
-        connectToRoom();
-        break;
-    }
+    const prevRoom = room;
+    await connectToRoom();
+    leaveRoom(prevRoom);
   };
 
   const reconnect = () => {
@@ -61,7 +54,7 @@ const Home = () => {
         <div className={styles.chat}>
           {room ? (
             <button onClick={nextRoom} className={styles.btn}>
-              next
+              {room.status === 'waiting' ? 'waiting...' : 'next'}
             </button>
           ) : (
             <button onClick={reconnect} className={styles.btn}>

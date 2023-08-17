@@ -15,12 +15,12 @@ const PannelVideo = ({ memberTrack, myVideoTrack }: VideoPannelProps) => {
       {myVideoTrack ? (
         <VideoPlayer videoTrack={myVideoTrack} />
       ) : (
-        <div className={styles.video} style={{ background: 'black' }} />
+        <div className={`${styles.video}`} style={{ backgroundColor: 'black' }} />
       )}
       {memberTrack ? (
         <VideoPlayer videoTrack={memberTrack} />
       ) : (
-        <div className={styles.video} style={{ background: 'black' }} />
+        <div className={`${styles.video} ${styles.placeholder}`} />
       )}
     </div>
   );

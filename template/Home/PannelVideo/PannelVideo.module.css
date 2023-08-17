@@ -1,3 +1,12 @@
+@keyframes pulse {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -12,6 +21,21 @@
   @media (min-width: 960px) {
     flex-direction: row;
   }
+}
+
+.placeholder {
+  position: relative;
+  background-color: black;
+}
+
+.placeholder::before {
+  content: 'Waiting for member...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  animation: pulse 1s infinite alternate;
 }
 
 .video {
