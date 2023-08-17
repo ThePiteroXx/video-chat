@@ -4,6 +4,8 @@ import { Room, Message } from '@/types/roomApi';
 
 import { RtmChannel, RtmMessage } from 'agora-rtm-sdk';
 
+import styles from './PanelChat.module.css';
+
 export type ChatHandle = {
   resetMessages: () => void;
 };
@@ -72,17 +74,19 @@ const PannelChat = forwardRef<ChatHandle, PannelChatProps>(
     }, [clientChannel]);
 
     return (
-      <div>
-        <ul>
+      <div className={styles.wrapper}>
+        <ul className={styles.messages}>
           {messages.map(({ message, userId: id }, index) => (
-            <li key={index}>
-              {indentifyUser(userId, id)}: {message}
+            <li key={index} className={id === 'info' ? styles.info : ''}>
+              <span className={styles.user}>{indentifyUser(userId, id)}:</span> {message}
             </li>
           ))}
         </ul>
-        <form onSubmit={onSubmit}>
-          <input ref={inputRef} />
-          <button disabled={!!!room}>submit</button>
+        <form onSubmit={onSubmit} className={styles.form}>
+          <input ref={inputRef} className={styles.input} />
+          <button disabled={!!!room} className={styles.submitButton}>
+            submit
+          </button>
         </form>
       </div>
     );

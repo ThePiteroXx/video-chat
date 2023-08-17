@@ -2,6 +2,8 @@ import { ICameraVideoTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng';
 
 import VideoPlayer from './VideoPlayer/VideoPlayer';
 
+import styles from './PannelVideo.module.css';
+
 interface VideoPannelProps {
   memberTrack?: IRemoteVideoTrack;
   myVideoTrack?: ICameraVideoTrack;
@@ -9,16 +11,16 @@ interface VideoPannelProps {
 
 const PannelVideo = ({ memberTrack, myVideoTrack }: VideoPannelProps) => {
   return (
-    <div>
-      {memberTrack ? (
-        <VideoPlayer videoTrack={memberTrack} style={{ width: '300px', height: '300px' }} />
-      ) : (
-        <div style={{ width: '300px', height: '300px', backgroundColor: 'black' }} />
-      )}
+    <div className={styles.wrapper}>
       {myVideoTrack ? (
-        <VideoPlayer videoTrack={myVideoTrack} style={{ width: '300px', height: '300px' }} />
+        <VideoPlayer videoTrack={myVideoTrack} />
       ) : (
-        <div style={{ width: '300px', height: '300px', backgroundColor: 'black' }} />
+        <div className={styles.video} style={{ background: 'black' }} />
+      )}
+      {memberTrack ? (
+        <VideoPlayer videoTrack={memberTrack} />
+      ) : (
+        <div className={styles.video} style={{ background: 'black' }} />
       )}
     </div>
   );

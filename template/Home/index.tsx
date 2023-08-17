@@ -7,7 +7,8 @@ import PannelVideo from './PannelVideo/PannelVideo';
 import { useRoom } from './hooks/useRoom';
 import { ChatHandle } from './PannelChat/PannelChat';
 import { leaveRoom } from './helpers';
-// import styles from '../styles/Home.module.css';
+
+import styles from './index.module.css';
 
 const rtcClient = AgoraRTC.createClient({
   mode: 'rtc',
@@ -47,17 +48,23 @@ const Home = () => {
   if (!myVideo) return <button onClick={connectToRoom}>Start chatting</button>;
 
   return (
-    <div>
-      <>
+    <div className={styles.main}>
+      <div className={styles.container}>
         <PannelVideo memberTrack={memberVideo} myVideoTrack={myVideo} />
-        {room ? (
-          <button onClick={nextRoom}>next</button>
-        ) : (
-          <button onClick={reconnect}>{isConnecting ? 'connecting...' : 'reconnect'}</button>
-        )}
-        <PannelChat userId={userId} room={room} clientChannel={chatChannel} ref={chatRef} />
-      </>
-      <p>{room?._id}</p>
+        <div className={styles.chat}>
+          {room ? (
+            <button onClick={nextRoom} className={styles.btn}>
+              next
+            </button>
+          ) : (
+            <button onClick={reconnect} className={styles.btn}>
+              {isConnecting ? 'connecting...' : 'reconnect'}
+            </button>
+          )}
+          <PannelChat userId={userId} room={room} clientChannel={chatChannel} ref={chatRef} />
+        </div>
+      </div>
+      {/* <p>{room?._id}</p> */}
     </div>
   );
 };
