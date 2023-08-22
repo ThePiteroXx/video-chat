@@ -3,7 +3,7 @@
 
 
 ## Project Overview 🎉
-It's demo app for video calling with random person like omegle.tv
+It's demo app for video calling with random person like omegle.com
 
 ### How it works?
 You can talk and chat with a random person who is available and looking for a person just like you.
