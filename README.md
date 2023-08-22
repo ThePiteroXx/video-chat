@@ -1,26 +1,38 @@
-# Next.js with TypeScript and ESLint
+<div id="top"></div>
+<h3 align="center">Video-chat app</h3>
 
-Starter code for a clean Next.js + TypeScript + ESLint project.
 
-More info here: https://paulintrognon.fr/blog/post/typescript-prettier-eslint-next-js
+## Project Overview 🎉
+It's demo app for video calling with random person like omegle.tv
 
-## Get started
+### How it works?
+You can talk and chat with a random person who is available and looking for a person just like you.
 
-```sh
-# Install dependencies
-yarn install
+## Tech/framework used 🔧
 
-# Enable husky
-yarn husky install
+| Tech                                                    | Description                              |
+| ------------------------------------------------------- | ---------------------------------------- |
+| [Next](https://nextjs.org/)                             | The React Framework for the Web          |
+| [Agora](https://docs.agora.io/en/)                      | SDK that allows you to easily implement video calls and live distribution on your own website |
+| [MongoDB](https://www.mongodb.com/)                     | No SQL Database                          |
+| [Husky](https://github.com/okonet/lint-staged)          | Pre-commit tool                          |
+| [Lint-staged](https://github.com/okonet/lint-staged)    | Pre-commit tool                          |
+| [Eslint](https://eslint.org/)                           | Javascript Linter                        |
+| [Prettier](https://prettier.io/)                        | Code formatter                           |
 
-# Start dev server
-yarn dev
-```
+## Getting Started
 
-## Features
+### Info
 
-- ESLint and Prettier are integrated with VSCode to fix and format code on save (you need eslint and prettier VSCode plugins)
-- lint-staged: linting will only happen on staged files, not all file
-- Latest Husky
-- TypeScript types are checked before each commit
-- You can build it yourself by [reading the blog post](https://paulintrognon.fr/blog/typescript-prettier-eslint-next-js) :-)
+Environment `.env`
+   ```env
+    MONGODB_URI={MONGO_DB_URI}
+    NEXT_PUBLIC_AGORA_APP_ID={AGORA_APP_ID}
+    AGORA_APP_CERT={AGORA_CERT}
+   ``` 
+
+## License 🔱
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
